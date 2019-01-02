@@ -6,7 +6,6 @@
                 <button @click='ChildremoveShow'>确定</button><button @click='ChildremoveShow'>取消</button>
             </div>
         </van-popup>
-       
     </div>
 </template>
 <script>

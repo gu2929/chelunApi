@@ -5,10 +5,11 @@
     </div>
     <div class='main'>
         <Banner></Banner>
+        <UpdateImg></UpdateImg>
         <div class='cont'>
             <div>
                 <div>
-                    <span>服务类型</span><span>换驾照</span>
+                    <span>服务类型</span><span @click="getShow(1)">换驾照</span>
                 </div>
             </div>
             <div>
@@ -46,9 +47,13 @@
 </template>
 <script>
 let JSbridge=require('../utils/JSbridge.js');
+
 import Banner from '../components/banner.vue';
 import BottomDalog from '../components/bottom_dalog.vue';
+import UpdateImg from '../components/updateImg.vue';
+
 import Vue from 'vue'
+
 import { Swipe, SwipeItem, Popup, Picker} from 'vant';
 Vue.use(Swipe).use(SwipeItem);
 Vue.use(Popup);
@@ -59,6 +64,7 @@ export default {
         return {
             headerArr:['订单提交','填写收货地址','正在办理','办理完成'],
             Index:0,
+            showChangeIndex:0,
             show:false,
             citys: {
                 '浙江': ['杭州', '宁波', '温州', '嘉兴', '湖州'],
@@ -69,7 +75,8 @@ export default {
     },
     components:{
         Banner,
-        BottomDalog
+        BottomDalog,
+        UpdateImg
     },
     mounted() {
         this.Picker=Picker;
@@ -93,24 +100,33 @@ export default {
                 }
             });
         },
-        getShow () {
+        getShow (index) {
+            this.showChangeIndex=index;
+            if(index===1){
+                this.columns=['考驾照','买驾照']
+            }
             this.show = true;
         },
         removeShow () {
             this.show = false;
         },
         onChange(values) {
-            this.columns=[
-                {
-                values: Object.keys(this.citys),
-                className: 'column1'
-                },
-                {
-                values: this.citys[values],
-                className: 'column2',
-                defaultIndex: 2
-                }
-            ]
+            if(this.showChangeIndex===1){
+              this.columns=['考驾照','买驾照']
+            }else{
+                this.columns=[
+                    {
+                    values: Object.keys(this.citys),
+                    className: 'column1'
+                    },
+                    {
+                    values: this.citys[values],
+                    className: 'column2',
+                    defaultIndex: 2
+                    }
+                ]
+            }
+            
            //Picker.methods.setColumnValues();
         }
     }
@@ -130,7 +146,8 @@ export default {
             background:#fff;
             display:flex;
             line-height:px2rem(50px);
-            text-align:center;
+            text-align:center;      
+            flex-shrink: 0;
             span{
                 flex:1;
                 font-size:px2rem(14px);
@@ -173,6 +190,7 @@ export default {
         }
         .main{
             flex:1;
+            overflow:auto;
             .cont{
                 margin-top:px2rem(10px);
                 width:100%;
@@ -226,6 +244,7 @@ export default {
             align-items: center;
             background:#fff;
             padding-left:px2rem(15px);
+            flex-shrink: 0;
             span{
                 color:red;
             }
