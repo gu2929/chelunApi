@@ -1,10 +1,7 @@
 <template>
     <div class='dalog'>
         <van-popup v-model="show" position="bottom" :overlay="true">
-            <van-picker :columns="columns" @change="ChildChange" />
-            <div class='buttonDom'>
-                <button @click='ChildremoveShow'>确定</button><button @click='ChildremoveShow'>取消</button>
-            </div>
+            <van-picker :columns="columns" @change="ChildChange" show-toolbar @confirm='onConfirm' @cancel='onCancel'/>
         </van-popup>
     </div>
 </template>
@@ -16,14 +13,28 @@ export default {
         },
         columns:{
             type:null
+        },
+        cityListArr:{
+            type:Array
+        },
+        num:{
+            type:Number
         }
     },
     methods:{
-        ChildChange () {
-            //console.log(this)
-            this.$emit('ParentChange','福建')
+        ChildChange (Picker,values) {
+            if(this.num===1){      
+                this.$emit('ParentChange',values)
+            }else if(this.num===2){
+                let obj=this.cityListArr.filter(item=>values[0]===item.name);
+                Picker.setColumnValues(1,obj[0].list.map(item=>item.name));
+                this.$emit('ParentChange',values)
+            }
         },
-        ChildremoveShow () {
+        onConfirm() {
+             this.$emit('ParentremoveShow')
+         },
+        onCancel() {
             this.$emit('ParentremoveShow')
         }
     }

@@ -30,9 +30,11 @@ let state={
 let mutations={
     updateLoadImg(state, payload){
         console.log(payload)
-        state[payload.index].src = payload.src
+        state.list[payload.index].src = payload.src
     }
 }
 export default {
-    state
+    namespaced:true,
+    state,
+    mutations
 }

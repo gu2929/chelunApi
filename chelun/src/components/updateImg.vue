@@ -1,11 +1,12 @@
 <template>
     <div class='updateImg'>
         <p v-for='(item,index) in list' :key='index'>
-            <span><img :src="addImg" @click='showMask(item)'></span>
+            <span v-if='item.src'><img :src="item.src" @click='showMask(item)'></span>
+            <span v-else><img :src="addImg" @click='showMask(item)'></span>
             <span>{{item.desc}}</span>
         </p>
-        <div class='mask' v-show='flag===true'>
-            <img :src="maskImg" alt="">
+        <div :class="flag===false ? 'mask':'mask active'">
+            <img :src="current.demo" alt="">
             <div>
                 <button @click='clickType(1)'>拍照</button>
                 <button @click='clickType(2)'>相册</button>
@@ -23,47 +24,42 @@ export default {
     data () {
         return {
             maskImg:'',
-            flag:false
+            flag:false,
+            current:{}
         } 
     },
     computed: {
         ...mapState({
             list:state=>state.indexStore.list
         }),
-        ...mapMutations({
-            updateLoadImg:'indexStore/updateLoadImg'
-        }),
         addImg () {
             return add;
         }
     },
     methods: {
+        ...mapMutations({
+            updateLoadImg:'indexStore/updateLoadImg'
+        }),
         showMask (val) {
-            this.maskImg=val.demo;
+            this.current=val;
             this.flag=true;
         },
         removeShow () {
             this.flag=false;
         },
-        clickType (type) {  
-            uploadImg(type).then(res=>{
-                if (res.code == 0){
-                    let src = '';
-                    if (/picture.eclicks.cn/.test(res.data.image01)) {
-                        src = res.data.temp.replace('http://', '//');
-                    } else {
-                        src = '//picture.eclicks.cn/' + res.data.temp;
-                    }
-                    this.updateLoadImg({
-                        src,
-                        index: this.list.findIndex(item=>item==this.current)
-                    })
-                }else{
-                    alert(res.msg);
-                }
-            })
+        async clickType (type) {
+            let res=await uploadImg(type);
+            if (res.result == 1){
+                this.updateLoadImg({
+                    src: res.data.url,
+                    index: this.list.findIndex(item=>item==this.current)
+                })
+                this.flag = false;
+            }else{
+                alert('上传图片失败');
+            }
         }
-    },
+    }
 }
 </script>
 <style lang="scss" scoped>
@@ -107,23 +103,30 @@ export default {
     .mask{
         width:100%;
         height:100%;
-        position:fixed;
-        top:0;
-        left:0;
         background:rgba(0,0,0,.5);
-        padding:px2rem(30px) 0;
         display:flex;
         flex-direction: column;
         justify-content: space-between;
+        visibility:hidden;
+        position:absolute;
+        left:0;
+        top:0;
         img{
-            display:block;
             width:90%;
             height:auto;
-            margin:0 auto;
+            position:absolute;
+            top:-100%;
+            left:0;
+            transition:all 1s;
         }
         div{
             width:90%;
+            height:auto;
             margin:0 auto;
+            position:absolute;
+            bottom:-100%;
+            left:0;
+            transition:all 1s;
             button{
                 width:100%;
                 display:block;
@@ -144,5 +147,18 @@ export default {
                 border-radius:px2rem(10px);
             }   
         }
+        &.active{
+            visibility:visible;
+            img{
+                top:5%;
+                left:5%;
+            };
+            div{
+                bottom:5%;
+                left:5%;
+            }
+        }
     }
+    
+    
 </style>

@@ -5,21 +5,23 @@
     </div>
     <div class='main'>
         <Banner></Banner>
+
         <UpdateImg></UpdateImg>
+
         <div class='cont'>
             <div>
                 <div>
-                    <span>服务类型</span><span @click="getShow(1)">换驾照</span>
+                    <span>服务类型</span><span @click="getShow(1)">换驾照</span><span>{{obj.info}}</span>
                 </div>
             </div>
             <div>
                 <div>
-                    <span>当前驾照签发城市</span><span @click='getShow'>请选择签发地</span>
+                    <span>当前驾照签发城市</span><span @click='getShow(2)'>请选择签发地</span><span>{{obj.nowCity}}</span>
                 </div>
             </div>
             <div>
                 <div>
-                    <span>可补换的签发城市</span><span @click='getShow'>请选择补换地</span>
+                    <span>可补换的签发城市</span><span @click='getShow(3)'>请选择补换地</span>
                 </div>
             </div>
             <div>
@@ -29,12 +31,16 @@
         <div class='bottom_cont'>
             <span>优惠</span><span>></span>
         </div>
+
         <BottomDalog 
             :show='show' 
             :columns='columns'
+            :cityListArr='cityListArr'
+            :num='num'
             @ParentChange='onChange'
             @ParentremoveShow='removeShow'>
         </BottomDalog>
+
         <div class='bottom_cont_Link'>
             <p>常见问题</p>
         </div>
@@ -48,6 +54,8 @@
 <script>
 let JSbridge=require('../utils/JSbridge.js');
 
+import {cityListApi,getCostListApi} from '../api/index';
+
 import Banner from '../components/banner.vue';
 import BottomDalog from '../components/bottom_dalog.vue';
 import UpdateImg from '../components/updateImg.vue';
@@ -55,6 +63,7 @@ import UpdateImg from '../components/updateImg.vue';
 import Vue from 'vue'
 
 import { Swipe, SwipeItem, Popup, Picker} from 'vant';
+
 Vue.use(Swipe).use(SwipeItem);
 Vue.use(Popup);
 Vue.use(Picker);
@@ -64,13 +73,11 @@ export default {
         return {
             headerArr:['订单提交','填写收货地址','正在办理','办理完成'],
             Index:0,
-            showChangeIndex:0,
             show:false,
-            citys: {
-                '浙江': ['杭州', '宁波', '温州', '嘉兴', '湖州'],
-                '福建': ['福州', '厦门', '莆田', '三明', '泉州']
-            },
-            columns:[]
+            columns:['买驾照','考驾照'],
+            obj:{info:'',nowCity:'',costCity:""},
+            cityListArr:[],
+            num:1
         }
     },
     components:{
@@ -78,19 +85,8 @@ export default {
         BottomDalog,
         UpdateImg
     },
-    mounted() {
-        this.Picker=Picker;
-        this.columns=[
-            {
-            values: Object.keys(this.citys),
-            className: 'column1'
-            },
-            {
-            values: this.citys['浙江'],
-            className: 'column2',
-            defaultIndex: 2
-            }
-        ]
+    created() {
+        this.cityList();
     },
     methods:{
         login () {
@@ -100,34 +96,61 @@ export default {
                 }
             });
         },
-        getShow (index) {
-            this.showChangeIndex=index;
-            if(index===1){
-                this.columns=['考驾照','买驾照']
-            }
+        async getShow (num) {
             this.show = true;
+            if(num ===2){
+                this.columns=[
+                    {
+                        values:this.cityListArr.map(item=>item.name),
+                    },
+                    {
+                        values: this.cityListArr[0].list.map(item=>item.name),
+                    }
+                ]
+            }else if(num===1){
+                this.columns=['买驾照','考驾照']
+            }else{
+                let idObj={
+                    order_type:1
+                }
+                let newObj=this.cityListArr.filter(item=>item.name===this.obj.nowCity.split(' ')[0]);
+                let newObj1=newObj[0].list.filter(item=>item.name===this.obj.nowCity.split(' ')[1]);
+                idObj.city_id=newObj[0].id;
+                idObj.province_id=newObj1[0].id;
+                let costCityListArr =await this.costCityList(idObj);
+                this.columns=[
+                    {
+                        values:costCityListArr.map(item=>item.name),
+                    },
+                    {
+                        values:costCityListArr[0].list.map(item=>item.name),
+                    }
+                ]
+            }
+            this.num = num;
         },
         removeShow () {
             this.show = false;
         },
         onChange(values) {
-            if(this.showChangeIndex===1){
-              this.columns=['考驾照','买驾照']
-            }else{
-                this.columns=[
-                    {
-                    values: Object.keys(this.citys),
-                    className: 'column1'
-                    },
-                    {
-                    values: this.citys[values],
-                    className: 'column2',
-                    defaultIndex: 2
-                    }
-                ]
+            if(this.num===1){
+                this.obj.info=values;
+            }else if(this.num===2){
+                this.obj.nowCity=values.join(' ');
             }
-            
-           //Picker.methods.setColumnValues();
+        },
+        async cityList () {
+           let res = await cityListApi();
+           res.data.forEach((val,ind)=>{
+               val.list.forEach((v,i)=>{
+                   delete v.list
+               })
+           })
+           this.cityListArr=res.data;
+        },
+        async costCityList (idObj) {
+             let res = await getCostListApi(idObj);
+             return res.data;
         }
     }
 }
@@ -140,6 +163,7 @@ export default {
         background:#ccc;
         display:flex;
         flex-direction:column;
+        overflow:hidden;
         .header{
             width:100%;
             height:px2rem(50px);

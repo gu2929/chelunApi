@@ -78,7 +78,17 @@ module.exports = {
   devServer: {
     historyApiFallback: true,
     noInfo: true,
-    overlay: true
+    overlay: true,
+    // 代理
+    proxy: {
+      '/Api': {
+        target: 'https://chezhu.eclicks.cn/',
+        changeOrigin: true,
+        pathRewrite: {
+          '/Api': '/'
+        }
+      }
+    }
   },
   performance: {
     hints: false

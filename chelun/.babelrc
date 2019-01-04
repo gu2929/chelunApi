@@ -3,7 +3,15 @@
     ["env", { "modules": false }],
     "stage-3"
   ],
-  "plugins": [
+  "plugins": [[
+      "transform-runtime",
+      {
+      "helpers": false,
+      "polyfill": false,
+      "regenerator": true,
+      "moduleName": "babel-runtime"
+      }
+    ],
     ["import", {
       "libraryName": "vant",
       "libraryDirectory": "es",
