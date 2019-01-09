@@ -1,41 +1,53 @@
 <template>
     <div class='dalog'>
         <van-popup v-model="show" position="bottom" :overlay="true">
-            <van-picker :columns="columns" @change="ChildChange" show-toolbar @confirm='onConfirm' @cancel='onCancel'/>
+            <van-picker :columns="columns" @change="changeValues" show-toolbar @confirm='onConfirm' @cancel='onCancel'/>
         </van-popup>
     </div>
 </template>
 <script>
+import {mapState,mapMutations} from 'vuex'
 export default {
-    props:{
+    props :{
         show:{
-            type:Boolean
-        },
-        columns:{
             type:null
-        },
-        cityListArr:{
-            type:Array
-        },
-        num:{
-            type:Number
         }
     },
+    computed: {
+        ...mapState({
+            columns:state=>state.getCityListStore.columns,
+            cityListArr:state=>state.getCityListStore.cityListArr,
+            costCityListArr:state=>state.getCityListStore.costCityListArr,
+            num:state=>state.getCityListStore.num,
+        })
+    },
+    created() {
+        this.cityList();
+    },
     methods:{
-        ChildChange (Picker,values) {
+        ...mapMutations({
+            cityListStore:'getCityListStore/cityListStore',
+            getValuesStore:'getCityListStore/getValuesStore'
+        }),
+        cityList () {
+            this.cityListStore();
+        },
+        changeValues (Picker,values) {
             if(this.num===1){      
-                this.$emit('ParentChange',values)
             }else if(this.num===2){
                 let obj=this.cityListArr.filter(item=>values[0]===item.name);
                 Picker.setColumnValues(1,obj[0].list.map(item=>item.name));
-                this.$emit('ParentChange',values)
+            }else{
+                let obj=this.costCityListArr.filter(item=>values[0]===item.name);
+                Picker.setColumnValues(1,obj[0].list.map(item=>item.name));
             }
         },
-        onConfirm() {
-             this.$emit('ParentremoveShow')
+        onConfirm(values) {
+            this.$emit('parentShow')
+            this.getValuesStore({values})
          },
         onCancel() {
-            this.$emit('ParentremoveShow')
+            this.$emit('parentShow')
         }
     }
 }

@@ -1,6 +1,23 @@
 // const host = /localhost/.test(window.location.host)?'https://h5.chelun.com':'http://h5-test.chelun.com';
+import Cookie from 'js-cookie';
+
 let JSbridge=require('../utils/JSbridge.js');
 
+export let getCookie = () => {
+    return Cookie.get('chelun_acToken')
+}
+
+export let login = () =>{
+    JSbridge.invoke('app', 'login', {
+        loginCallBackName: res=>window.location.reload()
+    })
+}
+export let share = () =>{
+    JSbridge.invoke('ui', 'shareMessage')
+}
+export let uploadBase64 = (base64)=>{
+    return sendRequest('http://123.206.55.50:11000/upload_base64', 'POST', {base64})
+}
 export let uploadImg = (type) => {
     return new Promise((resolve, reject)=>{
         JSbridge.invoke('device', 'chooseImage', {

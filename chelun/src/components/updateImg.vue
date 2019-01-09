@@ -23,14 +23,13 @@ export default {
     name:'updateImg',
     data () {
         return {
-            maskImg:'',
             flag:false,
             current:{}
         } 
     },
     computed: {
         ...mapState({
-            list:state=>state.indexStore.list
+            list:state=>state.upDateImgStore.list
         }),
         addImg () {
             return add;
@@ -38,7 +37,7 @@ export default {
     },
     methods: {
         ...mapMutations({
-            updateLoadImg:'indexStore/updateLoadImg'
+            updateLoadImg:'upDateImgStore/updateLoadImg'
         }),
         showMask (val) {
             this.current=val;
